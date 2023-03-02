@@ -96,11 +96,14 @@ _________ .__                   __                 __    _________ .____    .___
             print('Thank you for using the grocery checkout CLI!')
             paid = True
         elif payment_method.lower() == 'cash':
-            payment = input('How much will you be paying with today?' )
-            if isinstance(payment, float):
+            payment = input('How much will you be paying with today? ' )
+            try:
+                payment = float(payment)
                 change = payment - cart_total
-                print('Your change is ${change:.2f}.')
+                print(f'Your change is ${change:.2f}.')
                 print('Thank you for using the grocery checkout CLI!')
                 paid = True
+            except:
+                print('Please enter a valid number.')
         else:
             print('Please select a valid payment method.')
