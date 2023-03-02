@@ -4,7 +4,7 @@ from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models import GroceryItem, ShoppingCart, Store
+from models import GroceryItem, ShoppingCart, Store, grocery_item_store
 
 engine = create_engine('sqlite:///grocery_stores.db')
 Session = sessionmaker(bind=engine)
@@ -21,10 +21,10 @@ def make_grocery_items():
     grocery_items = [GroceryItem(
         name=fake.name(),
         quantity=randint(1, 12),
-        price=round(float(randint(0, 19)), 2) + random(), 
-    ) for i in range(500)]
+        price=round(float(randint(0, 19)) + random(), 2), 
+    ) for i in range(50)]
     for gi in grocery_items:
-        gi.unit_price = gi.price / gi.quantity
+        gi.unit_price = round(gi.price / gi.quantity, 2)
     
     session.add_all(grocery_items)
     session.commit()
@@ -40,7 +40,7 @@ def make_stores():
     stores = [Store(
         name=fake.name() + "'s",
         address=fake.address(),
-    ) for i in range(25)]
+    ) for i in range(10)]
     
     session.add_all(stores)
     session.commit()
@@ -53,16 +53,26 @@ def make_shopping_carts(grocery_items, stores):
     session.commit()
 
     print("Making shopping carts...")
-    shopping_carts = [ShoppingCart(
-        grocery_items=[rc(grocery_items) for i in range(20)],
-        store=rc(stores),
-    ) for i in range(500)]
+    shopping_carts = []
+    for i in range(25):
+        sc_store = rc(stores)
+        sc_grocery_items = [rc(grocery_items) for i in range(15)]
+        for gi in sc_grocery_items:
+            if gi not in sc_store.grocery_items:
+                sc_store.grocery_items.append(gi)
+        shopping_carts.append(ShoppingCart(store=sc_store))
+
+    session.add_all(stores)
     session.add_all(shopping_carts)
     session.commit()
 
     return shopping_carts
 
 if __name__ == '__main__':
+    
+    session.query(grocery_item_store).delete()
+    session.commit()
+
     grocery_items = make_grocery_items()
     stores = make_stores()
     make_shopping_carts(grocery_items, stores)

@@ -50,7 +50,7 @@ class ShoppingCart(Base):
 
     id = Column(Integer(), primary_key=True)
 
-    grocery_items = relationship('GroceryItem', backref=backref('shopping_cart'))
+    grocery_items = relationship('GroceryItem')
 
     store_id = Column(Integer(), ForeignKey('stores.id'))
     
